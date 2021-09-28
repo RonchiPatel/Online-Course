@@ -3,9 +3,16 @@ import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import Menu from "./Menu";
-
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import StudentRegister from "./StudentRegister";
 export default function StudentList() {
   const [studentList, setStudentList] = useState([]);
+  const [filterStudentList, setfilterStudentList] = useState([]);
+  const [show, setShow] = useState(false);
+  const [studentInfoItem, setStuentInfoItem] = useState({});
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   useEffect(() => {
     // creates entity
     fetch("http://localhost:17575//api/Student/StudentList", {
@@ -18,17 +25,17 @@ export default function StudentList() {
       .then((response) => response.json())
       .then((response) => {
         setStudentList(response.getStudentList);
-        console.log(response);
+        setfilterStudentList(response.getStudentList);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
   const searchData = (e) => {
-    console.log(e.target.value);
-    const x = studentList.filter((data) => data.Name.includes(e.target.value));
+    const x = filterStudentList.filter((data) => {
+      return data.Name.includes(e.target.value);
+    });
     setStudentList(x);
-    console.log(x);
   };
   const EditDataForStudent = (StudentId) => {
     fetch("http://localhost:17575//api/Student/StudentList", {
@@ -77,13 +84,13 @@ export default function StudentList() {
                         className="input-group-append"
                         style={{ marginLeft: 20 }}
                       >
-                        <Link
-                          to="newstudent"
+                        <a
+                          onClick={handleShow}
                           className="btn btn-dark btn-flat text-white"
                         >
                           <i className="fa fa-plus-circle" />
                           Add New Student
-                        </Link>
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -117,7 +124,7 @@ export default function StudentList() {
                                 <a
                                   href="#"
                                   class="text-muted"
-                                  onClick={editStudent(item.StudentId)}
+                                  onClick={handleShow}
                                 >
                                   <i class="fas fa-edit"></i>
                                 </a>
@@ -139,6 +146,22 @@ export default function StudentList() {
         </div>
       </div>
       <Footer></Footer>
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Modal heading</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <StudentRegister></StudentRegister>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleClose}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
