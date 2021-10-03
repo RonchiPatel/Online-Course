@@ -6,13 +6,19 @@ import Menu from "./Menu";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import StudentRegister from "./StudentRegister";
+import LoadingComponent from "./LoadingComponent";
+
 export default function StudentList() {
   const [studentList, setStudentList] = useState([]);
   const [filterStudentList, setfilterStudentList] = useState([]);
   const [show, setShow] = useState(false);
   const [studentInfoItem, setStuentInfoItem] = useState({});
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    setShow(true);
+  };
+
+  const [Loading, setLoading] = useState(true);
   useEffect(() => {
     // creates entity
     fetch("http://localhost:17575//api/Student/StudentList", {
@@ -26,11 +32,12 @@ export default function StudentList() {
       .then((response) => {
         setStudentList(response.getStudentList);
         setfilterStudentList(response.getStudentList);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [show]);
   const searchData = (e) => {
     const x = filterStudentList.filter((data) => {
       return data.Name.includes(e.target.value);
@@ -54,6 +61,7 @@ export default function StudentList() {
         console.log(err);
       });
   };
+
   return (
     <>
       <Header></Header>
@@ -85,7 +93,10 @@ export default function StudentList() {
                         style={{ marginLeft: 20 }}
                       >
                         <a
-                          onClick={handleShow}
+                          onClick={() => {
+                            handleShow();
+                            setStuentInfoItem({});
+                          }}
                           className="btn btn-dark btn-flat text-white"
                         >
                           <i className="fa fa-plus-circle" />
@@ -109,6 +120,8 @@ export default function StudentList() {
                       </tr>
                     </thead>
                     <tbody>
+                      {Loading && <LoadingComponent />}
+
                       {studentList &&
                         studentList.map((item, index) => {
                           return (
@@ -124,7 +137,13 @@ export default function StudentList() {
                                 <a
                                   href="#"
                                   class="text-muted"
-                                  onClick={handleShow}
+                                  onClick={() => {
+                                    setStuentInfoItem(item);
+
+                                    handleShow();
+                                    console.log("List", item);
+                                    console.log("info", studentInfoItem);
+                                  }}
                                 >
                                   <i class="fas fa-edit"></i>
                                 </a>
@@ -151,16 +170,11 @@ export default function StudentList() {
           <Modal.Title>Modal heading</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <StudentRegister></StudentRegister>
+          <StudentRegister
+            studentInfoItem={studentInfoItem}
+            handelClose={handleClose}
+          ></StudentRegister>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   );

@@ -3,13 +3,15 @@ import Footer from "./Footer";
 import Header from "./Header";
 import Menu from "./Menu";
 
-export default function StudentRegister() {
+export default function StudentRegister(props) {
   const [addStudent, setAddStudent] = useState({
-    StudentID: "0",
-    Name: "",
-    Email: "",
-    Phone: "",
+    StudentID: props.studentInfoItem.StudentID,
+    Name: props.studentInfoItem.Name,
+    Email: props.studentInfoItem.Email,
+    Phone: props.studentInfoItem.Phone,
   });
+  const [uploadFile, setUploadFile] = useState();
+  // console.log("Print Props:", Name);
   const handleChange = (e) => {
     const value = e.target.value;
     setAddStudent({
@@ -18,7 +20,7 @@ export default function StudentRegister() {
     });
     console.log(addStudent);
   };
-  const updateStudentInfo = () => {
+  const updateStudentInfo = (e) => {
     // creates entity
     fetch("http://localhost:17575//api/Student/studentaddedit", {
       method: "POST",
@@ -31,11 +33,34 @@ export default function StudentRegister() {
       .then((response) => response.json())
       .then((response) => {
         console.log(response);
+        addFile(e, response.Student.Data.StudentId);
+        props.handelClose();
       })
       .catch((err) => {
         console.log(err);
       });
   };
+
+  const addFile = (Fileevent, StudentID) => {
+    var formData = new FormData();
+    formData.append("name", uploadFile);
+    formData.append("StudentID", StudentID);
+    console.log("Form Data - ", formData);
+
+    console.log("Upload File, Student Id- ", uploadFile, StudentID);
+
+    fetch("http://localhost:17575//api/Student/UploadStudentProfileImage", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data" },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => this.setState({ error, isLoading: false }));
+  };
+
   return (
     <>
       {/* <Header></Header>
@@ -62,6 +87,7 @@ export default function StudentRegister() {
                   placeholder="Enter student name"
                   onChange={handleChange}
                   name="Name"
+                  value={addStudent.Name}
                 />
               </div>
               <div className="form-group">
@@ -73,6 +99,7 @@ export default function StudentRegister() {
                   placeholder="abc@gmail.com"
                   onChange={handleChange}
                   name="Email"
+                  value={addStudent.Email}
                 />
               </div>
               <div className="form-group">
@@ -84,6 +111,7 @@ export default function StudentRegister() {
                   placeholder="978**9855"
                   onChange={handleChange}
                   name="Phone"
+                  value={addStudent.Phone}
                 />
               </div>
               <div className="form-group">
@@ -94,6 +122,9 @@ export default function StudentRegister() {
                       type="file"
                       className="custom-file-input"
                       id="exampleInputFile"
+                      onChange={(e) => {
+                        setUploadFile(e.target.files[0]);
+                      }}
                     />
                     <label
                       className="custom-file-label"
