@@ -7,7 +7,8 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import StudentRegister from "./StudentRegister";
 import LoadingComponent from "./LoadingComponent";
-
+import db from "../../Firebase/Firebaseconfig";
+import { onSnapshot, collection } from "firebase/firestore";
 export default function StudentList() {
   const [studentList, setStudentList] = useState([]);
   const [filterStudentList, setfilterStudentList] = useState([]);
@@ -20,24 +21,15 @@ export default function StudentList() {
 
   const [Loading, setLoading] = useState(true);
   useEffect(() => {
-    // creates entity
-    fetch("http://localhost:17575//api/Student/StudentList", {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        setStudentList(response.getStudentList);
-        setfilterStudentList(response.getStudentList);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [show]);
+    onSnapshot(collection(db, "StudentDB"), (snapshot) =>
+      setStudentList(
+        snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+      )
+    );
+    setfilterStudentList(studentList);
+    setLoading(false);
+  }, []);
+
   const searchData = (e) => {
     const x = filterStudentList.filter((data) => {
       return data.Name.includes(e.target.value);

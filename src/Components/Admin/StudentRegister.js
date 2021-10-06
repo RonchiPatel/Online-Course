@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import Footer from "./Footer";
 import Header from "./Header";
 import Menu from "./Menu";
-import firebase from "firebase/app";
-import "firebase/firestore";
-// import { firebaseConfig } from "./Firebase/Firebaseconfig";
-import { firebaseConfig } from "../../Firebase/Firebaseconfig";
+
 export default function StudentRegister(props) {
   const [addStudent, setAddStudent] = useState({
     // StudentID: props.studentInfoItem.StudentID,
@@ -13,18 +10,6 @@ export default function StudentRegister(props) {
     Email: props.studentInfoItem.Email,
     Phone: props.studentInfoItem.Phone,
   });
-
-  // firebase code start
-
-  if (!firebase.apps.length) {
-    try {
-      firebase.initializeApp(firebaseConfig);
-    } catch (err) {
-      console.error("Firebase initialization error raised", err.stack);
-    }
-  }
-  const db = firebase.firestore();
-  // end
 
   const [uploadFile, setUploadFile] = useState();
   // console.log("Print Props:", Name);
@@ -39,10 +24,6 @@ export default function StudentRegister(props) {
 
   const updateStudentInfo = (e) => {
     // const temp = { StudentID: "1", ...addStudent };
-    console.log("student info", addStudent);
-
-    db.collection("Student").add(addStudent);
-
     // Code dot net API Start
     // fetch("http://localhost:17575//api/Student/studentaddedit", {
     //   method: "POST",
