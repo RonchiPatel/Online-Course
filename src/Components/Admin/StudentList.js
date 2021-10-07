@@ -9,6 +9,7 @@ import StudentRegister from "./StudentRegister";
 import LoadingComponent from "./LoadingComponent";
 import db from "../../Firebase/Firebaseconfig";
 import { onSnapshot, collection } from "firebase/firestore";
+
 export default function StudentList() {
   const [studentList, setStudentList] = useState([]);
   const [filterStudentList, setfilterStudentList] = useState([]);
@@ -20,14 +21,17 @@ export default function StudentList() {
   };
 
   const [Loading, setLoading] = useState(true);
+  var temp;
   useEffect(() => {
-    onSnapshot(collection(db, "StudentDB"), (snapshot) =>
+    onSnapshot(collection(db, "StudentDB"), (snapshot) => {
       setStudentList(
         snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-      )
-    );
-    setfilterStudentList(studentList);
-    setLoading(false);
+      );
+      setfilterStudentList(
+        snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+      );
+      setLoading(false);
+    });
   }, []);
 
   const searchData = (e) => {
@@ -35,23 +39,6 @@ export default function StudentList() {
       return data.Name.includes(e.target.value);
     });
     setStudentList(x);
-  };
-  const EditDataForStudent = (StudentId) => {
-    fetch("http://localhost:17575//api/Student/StudentList", {
-      method: "GET",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        setStudentList(response.getStudentList);
-        console.log(response);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   };
 
   return (

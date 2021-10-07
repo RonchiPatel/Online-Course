@@ -1,18 +1,17 @@
 import React, { useState } from "react";
-import Footer from "./Footer";
-import Header from "./Header";
-import Menu from "./Menu";
+import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import db from "../../Firebase/Firebaseconfig";
 
 export default function StudentRegister(props) {
   const [addStudent, setAddStudent] = useState({
-    // StudentID: props.studentInfoItem.StudentID,
+    id: props.studentInfoItem.id,
     Name: props.studentInfoItem.Name,
     Email: props.studentInfoItem.Email,
     Phone: props.studentInfoItem.Phone,
   });
 
   const [uploadFile, setUploadFile] = useState();
-  // console.log("Print Props:", Name);
+
   const handleChange = (e) => {
     const value = e.target.value;
     setAddStudent({
@@ -22,47 +21,16 @@ export default function StudentRegister(props) {
     console.log(addStudent);
   };
 
-  const updateStudentInfo = (e) => {
-    // const temp = { StudentID: "1", ...addStudent };
-    // Code dot net API Start
-    // fetch("http://localhost:17575//api/Student/studentaddedit", {
-    //   method: "POST",
-    //   headers: {
-    //     "content-type": "application/json",
-    //     accept: "application/json",
-    //   },
-    //   body: JSON.stringify(addStudent),
-    // })
-    //   .then((response) => response.json())
-    //   .then((response) => {
-    //     console.log(response);
-    //     addFile(e, response.Student.Data.StudentId);
-    //     props.handelClose();
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-    // Code dot net API END
-  };
-
-  const addFile = (Fileevent, StudentID) => {
-    var formData = new FormData();
-    formData.append("name", uploadFile);
-    formData.append("StudentID", StudentID);
-    console.log("Form Data - ", formData);
-
-    console.log("Upload File, Student Id- ", uploadFile, StudentID);
-
-    fetch("http://localhost:17575//api/Student/UploadStudentProfileImage", {
-      method: "POST",
-      headers: { "Content-Type": "multipart/form-data" },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => this.setState({ error, isLoading: false }));
+  const updateStudentInfo = async () => {
+    if (addStudent.id) {
+      const docRef = doc(db, "StudentDB", addStudent.id);
+      setDoc(docRef, addStudent);
+    } else {
+      addStudent.id = 0;
+      const collectionRef = collection(db, "StudentDB");
+      const docRef = await addDoc(collectionRef, addStudent);
+      console.log("The new ID is: " + docRef.id);
+    }
   };
 
   return (
