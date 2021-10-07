@@ -126,8 +126,10 @@ export default function StudentList() {
                                 >
                                   <i class="fas fa-edit"></i>
                                 </a>
+                              </td>
+                              <td>
                                 <a href="#" class="text-muted">
-                                  <i class="fas fa-delete"></i>
+                                  <i class="fas fa-trash"></i>
                                 </a>
                               </td>
                             </tr>
