@@ -7,20 +7,26 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import StudentRegister from "./StudentRegister";
 import LoadingComponent from "./LoadingComponent";
-import db from "../../Firebase/Firebaseconfig";
-import { onSnapshot, collection } from "firebase/firestore";
+import db, { storage } from "../../Firebase/Firebaseconfig";
+import { ref, getDownloadURL } from "firebase/storage";
+import { onSnapshot, collection, deleteDoc, doc } from "firebase/firestore";
+import { useSelector, useDispatch } from "react-redux";
+import { set_indicator } from "../../app/reducer";
 
 export default function StudentList() {
   const [studentList, setStudentList] = useState([]);
   const [filterStudentList, setfilterStudentList] = useState([]);
-  const [show, setShow] = useState(false);
   const [studentInfoItem, setStuentInfoItem] = useState({});
-  const handleClose = () => setShow(false);
+  const [Loading, setLoading] = useState(true);
+  const [url, seturl] = useState("");
+  const indicator = useSelector((state) => state.indicator);
+  const dispatch = useDispatch();
+
+  const handleClose = () => dispatch(set_indicator(false));
   const handleShow = () => {
-    setShow(true);
+    dispatch(set_indicator(true));
   };
 
-  const [Loading, setLoading] = useState(true);
   var temp;
   useEffect(() => {
     onSnapshot(collection(db, "StudentDB"), (snapshot) => {
@@ -41,9 +47,21 @@ export default function StudentList() {
     setStudentList(x);
   };
 
+  const deleteitem = async (id) => {
+    console.log(id);
+    const docref = doc(db, "StudentDB", id);
+    await deleteDoc(docref);
+  };
+
+  const getImage = async (name) => {
+    const url = await getDownloadURL(ref(storage, name));
+    seturl(url);
+  };
+
   return (
     <>
       <Header></Header>
+
       <Menu></Menu>
       <div className="content-wrapper">
         <div className="content-header">
@@ -95,7 +113,8 @@ export default function StudentList() {
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Image</th>
-                        <th>Action</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -111,14 +130,25 @@ export default function StudentList() {
                               <td>{item.Email}</td>
                               <td>{item.Phone}</td>
 
-                              <td>Image</td>
+                              <td
+                                onClick={() => {
+                                  getImage(item.ImageFileName);
+                                }}
+                              >
+                                Download
+                                <img
+                                  src={url}
+                                  alt="Girl in a jacket"
+                                  width="50"
+                                  height="50"
+                                ></img>
+                              </td>
                               <td>
                                 <a
                                   href="#"
                                   class="text-muted"
                                   onClick={() => {
                                     setStuentInfoItem(item);
-
                                     handleShow();
                                     console.log("List", item);
                                     console.log("info", studentInfoItem);
@@ -126,8 +156,16 @@ export default function StudentList() {
                                 >
                                   <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="#" class="text-muted">
-                                  <i class="fas fa-delete"></i>
+                              </td>
+                              <td>
+                                <a
+                                  href="#"
+                                  class="text-muted"
+                                  onClick={() => {
+                                    deleteitem(item.id);
+                                  }}
+                                >
+                                  <i class="fas fa-trash"></i>
                                 </a>
                               </td>
                             </tr>
@@ -144,7 +182,7 @@ export default function StudentList() {
         </div>
       </div>
       <Footer></Footer>
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={indicator} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Modal heading</Modal.Title>
         </Modal.Header>

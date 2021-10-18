@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { collection, addDoc, setDoc, doc } from "firebase/firestore";
-import db from "../../Firebase/Firebaseconfig";
+import db, { storage } from "../../Firebase/Firebaseconfig";
+import { useSelector, useDispatch } from "react-redux";
+import { set_indicator } from "../../app/reducer";
+import { ref, uploadBytes } from "firebase/storage";
 
 export default function StudentRegister(props) {
   const [addStudent, setAddStudent] = useState({
@@ -11,6 +14,16 @@ export default function StudentRegister(props) {
   });
 
   const [uploadFile, setUploadFile] = useState();
+  const indicator = useSelector((state) => state.indicator);
+  const dispatch = useDispatch();
+
+  const uploadFileImageFirebase = async () => {
+    const storageRef = ref(storage, uploadFile.name);
+    // 'file' comes from the Blob or File API
+    uploadBytes(storageRef, uploadFile).then((snapshot) => {
+      console.log("Uploaded a blob or file!");
+    });
+  };
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -22,6 +35,7 @@ export default function StudentRegister(props) {
   };
 
   const updateStudentInfo = async () => {
+    await uploadFileImageFirebase();
     if (addStudent.id) {
       const docRef = doc(db, "StudentDB", addStudent.id);
       setDoc(docRef, addStudent);
@@ -31,6 +45,7 @@ export default function StudentRegister(props) {
       const docRef = await addDoc(collectionRef, addStudent);
       console.log("The new ID is: " + docRef.id);
     }
+    dispatch(set_indicator(false));
   };
 
   return (
@@ -96,6 +111,10 @@ export default function StudentRegister(props) {
                       id="exampleInputFile"
                       onChange={(e) => {
                         setUploadFile(e.target.files[0]);
+                        setAddStudent({
+                          ...addStudent,
+                          ImageFileName: e.target.files[0].name,
+                        });
                       }}
                     />
                     <label
@@ -104,6 +123,7 @@ export default function StudentRegister(props) {
                     >
                       Choose file
                     </label>
+                    <input type="file"></input>
                   </div>
                 </div>
               </div>
